@@ -110,8 +110,8 @@ void Aircraft::updateSpecs() {
 }
 
 void Aircraft::reset() {
-    // Start on runway
-    position = Vector3(0, 2.0f, -400.0f);
+    // Start on runway (ground height 0.0 + gear height 3.0)
+    position = Vector3(0, 3.0f, -400.0f);
     rotation = Vector3(0, 0, 0);
     velocity = Vector3(0, 0, 0);
     angularVelocity = Vector3(0, 0, 0);
@@ -228,59 +228,29 @@ void Aircraft::applyPhysics(float deltaTime) {
         while (rotation.y < 0) rotation.y += 360.0f;
         while (rotation.y >= 360.0f) rotation.y -= 360.0f;
         
-        // More forgiving and fun lift model - based on angle of attack, not just pitch input
-        float angleOfAttack = rotation.x * DEG_TO_RAD;
+        // SIMPLE ARCADE FLIGHT PHYSICS - User has full control
         
-        // Natural lift from airspeed - creates sustainable flight
-        // Base lift coefficient varies with speed (more lift at higher speeds)
-        float speedRatio = std::min(1.0f, speedKmh / (specs.stallSpeed * 1.5f));  // Normalized to stall speed
-        float baseLift = 0.6f + 0.3f * speedRatio;  // Always some lift, more at higher speeds
-        float liftCoeff = baseLift;
+        // Direct throttle control - no complex aerodynamics
+        // Throttle directly affects climb rate
+        float climbFromThrottle = throttle * specs.climbRate * 1.5f;  // Throttle = climb
         
-        // Additional lift from pitch angle when pointed up (natural aerodynamics)
-        // Pitch up increases lift significantly
-        if (angleOfAttack > 0.0f && angleOfAttack < 1.2f) {  // Wider optimal climb angle
-            liftCoeff += (angleOfAttack / 1.2f) * 1.2f;  // Even stronger increase with pitch up
-        }
+        // Pitch input directly affects vertical velocity
+        // Positive pitch (up) = climb, negative (down) = descend
+        float climbFromPitch = pitchInput * specs.climbRate * 0.8f;
         
-        // User pitch input ADDS to lift strongly
-        liftCoeff += std::max(0.0f, pitchInput) * 0.7f;  // Very strong pitch input response
+        // Combined vertical velocity - user is in control
+        verticalSpeed = climbFromThrottle + climbFromPitch;
         
-        // Stall still reduces lift, but less dramatically for fun factor
-        if (stalling) {
-            liftCoeff *= 0.5f;  // More lift even when stalling
-        }
+        // Gentle gravity pull to prevent infinite levitation - but throttle overcomes it
+        // No stall, no complex lift calculations - just sandbox flying
+        float gravityPull = gravity * 0.3f;  // Reduced gravity so user control dominates
+        verticalSpeed -= gravityPull * deltaTime;
         
-        // Flaps improve lift substantially
-        if (flapsLevel > 0) {
-            liftCoeff *= (1.0f + 0.3f * flapsLevel);  // Even more effective flaps
-        }
-        
-        // Calculate lift force - use a better formula that works at low speeds
-        // The key is to not rely solely on speed^2, add a baseline force component
-        float speedComponent = altitudeDensity * speed * speed * 0.15f;  // Increased scaling
-        float baselineLifting = specs.weight * 0.35f * altitudeDensity;  // Much stronger baseline - allows takeoff
-        float liftForce = liftCoeff * (speedComponent + baselineLifting);  // Combined approach
-        
-        // Gravity - weight always pulls down
-        float weightForce = specs.weight * gravity;
-        
-        // Net vertical force: lift minus weight
-        // Direct calculation without aggressive dampening
-        float netVerticalForce = (liftForce - weightForce);
-        
-        // Apply vertical acceleration smoothly
-        // Scale by a reasonable factor for more responsive lift
-        verticalSpeed += (netVerticalForce / specs.weight) * deltaTime * 8.0f;
-        
-        // Throttle helps climb significantly - engines provide power
-        verticalSpeed += throttle * specs.climbRate * 0.8f * deltaTime;
-        
-        // Limit vertical speed with generous margins for aerobatics
+        // Limit vertical speed for safety
         verticalSpeed = std::clamp(verticalSpeed, -specs.climbRate * 3.0f, specs.climbRate * 2.5f);
     } else {
-        // On ground physics
-        verticalSpeed = 0;
+        // On ground - no vertical movement, steering only
+        verticalSpeed = 0.0f;
         
         // Nose wheel steering - responsive but limited at low speed
         if (speed > 2.0f) {
@@ -322,8 +292,9 @@ void Aircraft::checkGroundCollision() {
         position.y = groundHeight + gearHeight;
         verticalSpeed = 0;
     } else {
-        // Takeoff check
-        if (onGround && speed > specs.stallSpeed / 3.6f * 0.8f && rotation.x > 5.0f) {
+        // Takeoff check - make it arcade-friendly and fun
+        // Just need throttle + slight pitch up to take off
+        if (onGround && throttle > 0.2f && rotation.x > 2.0f) {
             onGround = false;
         }
     }

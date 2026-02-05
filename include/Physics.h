@@ -31,8 +31,4 @@ private:
     void applyForces(Aircraft* aircraft, float deltaTime);
     void handleGroundContact(Aircraft* aircraft, const Terrain* terrain);
     void handleCollision(Aircraft* aircraft, const Terrain* terrain);
-    
-    // Simulation parameters
-    float timeScale = 1.0f;
-    bool realisticPhysics = true;
 };

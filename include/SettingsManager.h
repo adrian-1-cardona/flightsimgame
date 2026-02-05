@@ -2,6 +2,7 @@
 
 #include "Types.h"
 #include <string>
+#include <algorithm>
 
 class SettingsManager {
 public:
@@ -22,10 +23,10 @@ public:
     float getSFXVolume() const { return settings.sfxVolume; }
     float getEngineVolume() const { return settings.engineVolume; }
     
-    void setMasterVolume(float vol) { settings.masterVolume = clamp(vol, 0.0f, 1.0f); }
-    void setMusicVolume(float vol) { settings.musicVolume = clamp(vol, 0.0f, 1.0f); }
-    void setSFXVolume(float vol) { settings.sfxVolume = clamp(vol, 0.0f, 1.0f); }
-    void setEngineVolume(float vol) { settings.engineVolume = clamp(vol, 0.0f, 1.0f); }
+    void setMasterVolume(float vol) { settings.masterVolume = std::clamp(vol, 0.0f, 1.0f); }
+    void setMusicVolume(float vol) { settings.musicVolume = std::clamp(vol, 0.0f, 1.0f); }
+    void setSFXVolume(float vol) { settings.sfxVolume = std::clamp(vol, 0.0f, 1.0f); }
+    void setEngineVolume(float vol) { settings.engineVolume = std::clamp(vol, 0.0f, 1.0f); }
     
     // Display settings
     bool isFullscreen() const { return settings.fullscreen; }
@@ -37,15 +38,15 @@ public:
     void setFullscreen(bool fs) { settings.fullscreen = fs; }
     void setResolution(int w, int h) { settings.resolutionWidth = w; settings.resolutionHeight = h; }
     void setVSync(bool vs) { settings.vsync = vs; }
-    void setGraphicsQuality(int q) { settings.graphicsQuality = clamp(q, 0, 3); }
+    void setGraphicsQuality(int q) { settings.graphicsQuality = std::clamp(q, 0, 3); }
     
     // Control settings
     float getMouseSensitivity() const { return settings.mouseSensitivity; }
     float getControllerSensitivity() const { return settings.controllerSensitivity; }
     bool isYAxisInverted() const { return settings.invertYAxis; }
     
-    void setMouseSensitivity(float sens) { settings.mouseSensitivity = clamp(sens, 0.1f, 3.0f); }
-    void setControllerSensitivity(float sens) { settings.controllerSensitivity = clamp(sens, 0.1f, 3.0f); }
+    void setMouseSensitivity(float sens) { settings.mouseSensitivity = std::clamp(sens, 0.1f, 3.0f); }
+    void setControllerSensitivity(float sens) { settings.controllerSensitivity = std::clamp(sens, 0.1f, 3.0f); }
     void setInvertYAxis(bool invert) { settings.invertYAxis = invert; }
     
     // HUD settings
@@ -56,18 +57,6 @@ public:
     void setMinimapEnabled(bool enabled) { settings.showMinimap = enabled; }
     
 private:
-    float clamp(float value, float min, float max) const {
-        if (value < min) return min;
-        if (value > max) return max;
-        return value;
-    }
-    
-    int clamp(int value, int min, int max) const {
-        if (value < min) return min;
-        if (value > max) return max;
-        return value;
-    }
-    
     GameSettings settings;
     std::string settingsPath;
 };

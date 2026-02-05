@@ -50,6 +50,8 @@ private:
     void renderVolumeSettings(Renderer* renderer);
     void renderAircraftPreview(Renderer* renderer, AircraftType type);
     
+    void updateVolumeSettings(float delta);
+    
     Game* game;
     
     // Current menu state

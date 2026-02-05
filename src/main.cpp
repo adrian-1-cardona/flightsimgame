@@ -14,28 +14,21 @@
 #include "Game.h"
 #include <iostream>
 #include <memory>
-#include <cstdio>
+#include <cstdlib>
+#include <ctime>
 
 int main(int argc, char* argv[]) {
-    setvbuf(stdout, NULL, _IONBF, 0);
-    setvbuf(stderr, NULL, _IONBF, 0);
+    // Seed random number generator
+    std::srand(static_cast<unsigned>(std::time(nullptr)));
     
     try {
-        fprintf(stderr, "Starting Flight Simulator\n");
-        fflush(stderr);
-        
         std::cout << "==================================" << std::endl;
         std::cout << "   FLIGHT SIMULATOR PRO v1.0.0   " << std::endl;
         std::cout << "==================================" << std::endl;
         std::cout << std::endl;
         
         // Create and initialize the game
-        fprintf(stderr, "Creating game object\n");
-        fflush(stderr);
         auto game = std::make_unique<Game>();
-        
-        fprintf(stderr, "Initializing game\n");
-        fflush(stderr);
         if (!game->initialize()) {
             std::cerr << "ERROR: Failed to initialize game!" << std::endl;
             return -1;

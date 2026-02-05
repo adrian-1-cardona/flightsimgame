@@ -9,8 +9,6 @@ InputManager::~InputManager() {
 }
 
 bool InputManager::initialize() {
-    std::cout << "Initializing input manager..." << std::endl;
-    
     // Initialize SDL game controller subsystem
     if (SDL_InitSubSystem(SDL_INIT_GAMECONTROLLER) < 0) {
         std::cerr << "Failed to initialize game controller subsystem: " << SDL_GetError() << std::endl;
@@ -93,8 +91,6 @@ void InputManager::resetToDefaultMappings() {
 }
 
 void InputManager::scanForControllers() {
-    std::cout << "Scanning for controllers..." << std::endl;
-    
     // Close existing controllers
     for (auto controller : connectedControllers) {
         if (controller) {
@@ -106,15 +102,12 @@ void InputManager::scanForControllers() {
     
     // Scan for new controllers
     int numJoysticks = SDL_NumJoysticks();
-    std::cout << "Found " << numJoysticks << " joystick(s)" << std::endl;
     
     for (int i = 0; i < numJoysticks; i++) {
         if (SDL_IsGameController(i)) {
             SDL_GameController* controller = SDL_GameControllerOpen(i);
             if (controller) {
                 connectedControllers.push_back(controller);
-                std::cout << "  Controller " << i << ": " 
-                         << SDL_GameControllerName(controller) << std::endl;
                 
                 // Use first controller as active
                 if (!activeController) {
@@ -122,12 +115,6 @@ void InputManager::scanForControllers() {
                 }
             }
         }
-    }
-    
-    if (activeController) {
-        std::cout << "Active controller: " << SDL_GameControllerName(activeController) << std::endl;
-    } else {
-        std::cout << "No controller active. Using keyboard." << std::endl;
     }
 }
 

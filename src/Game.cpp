@@ -24,7 +24,6 @@
 #endif
 
 Game::Game() {
-    std::cout << "Creating Flight Simulator..." << std::endl;
 }
 
 Game::~Game() {
@@ -32,8 +31,6 @@ Game::~Game() {
 }
 
 bool Game::initialize() {
-    std::cout << "Initializing game systems..." << std::endl;
-    
     // Initialize SDL
     if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_GAMECONTROLLER | SDL_INIT_HAPTIC) < 0) {
         std::cerr << "SDL initialization failed: " << SDL_GetError() << std::endl;
@@ -76,24 +73,22 @@ bool Game::initialize() {
     SDL_GL_SetSwapInterval(1);
     
     // Initialize subsystems
-    std::cout << "Initializing renderer..." << std::endl;
     renderer = std::make_unique<Renderer>();
     if (!renderer->initialize(window, windowWidth, windowHeight)) {
         std::cerr << "Renderer initialization failed!" << std::endl;
         return false;
     }
     
+    
     std::cout << "Initializing settings manager..." << std::endl;
     settingsManager = std::make_unique<SettingsManager>();
     settingsManager->loadSettings("settings.cfg");
     
-    std::cout << "Initializing audio manager..." << std::endl;
     audioManager = std::make_unique<AudioManager>();
     if (!audioManager->initialize()) {
         std::cerr << "Warning: Audio initialization failed, continuing without sound" << std::endl;
     }
     
-    std::cout << "Initializing input manager..." << std::endl;
     inputManager = std::make_unique<InputManager>();
     if (!inputManager->initialize()) {
         std::cerr << "Input manager initialization failed!" << std::endl;
@@ -102,31 +97,21 @@ bool Game::initialize() {
     
     // Scan for controllers
     inputManager->scanForControllers();
-    if (inputManager->isControllerConnected()) {
-        std::cout << "Controller detected: " << inputManager->getControllerName() << std::endl;
-    } else {
-        std::cout << "No controller detected. Use keyboard controls." << std::endl;
-    }
     
     std::cout << "Initializing menu system..." << std::endl;
     menuSystem = std::make_unique<MenuSystem>(this);
     
-    std::cout << "Initializing terrain..." << std::endl;
     terrain = std::make_unique<Terrain>();
     terrain->generate(32, 10.0f);  // Smaller chunks for better performance
     
-    std::cout << "Initializing sky..." << std::endl;
     sky = std::make_unique<Sky>();
     sky->setTimeOfDay(12.0f);
     
-    std::cout << "Initializing loading screen..." << std::endl;
     loadingScreen = std::make_unique<LoadingScreen>();
     
-    std::cout << "Initializing camera..." << std::endl;
     camera = std::make_unique<Camera>();
     camera->setMode(CameraMode::CHASE);
     
-    std::cout << "Initializing physics..." << std::endl;
     physics = std::make_unique<Physics>();
     
     // Create default aircraft
@@ -135,17 +120,12 @@ bool Game::initialize() {
     isRunning = true;
     lastFrameTime = SDL_GetPerformanceCounter();
     
-    std::cout << "All systems initialized!" << std::endl;
     return true;
 }
 
 void Game::run() {
-    std::cout << "Starting game loop..." << std::endl;
-    
     // Show main menu
     setState(GameState::MAIN_MENU);
-    
-    std::cout << "Main menu displayed. Use arrow keys and Enter to navigate, or click with mouse." << std::endl;
     
     while (isRunning) {
         // Calculate delta time
@@ -350,25 +330,6 @@ void Game::update(float deltaTime) {
                 }
             }
             
-            // Handle mouse-based camera controls
-            if (inputManager->getMouseDeltaX() != 0 || inputManager->getMouseDeltaY() != 0) {
-                float mouseSensitivity = 1.0f;  // Increase sensitivity for better feel
-                float yawDelta = inputManager->getMouseDeltaX() * mouseSensitivity;
-                float pitchDelta = inputManager->getMouseDeltaY() * mouseSensitivity;
-                // Debug output
-                if (inputManager->getMouseDeltaX() != 0 || inputManager->getMouseDeltaY() != 0) {
-                    std::cerr << "Mouse delta: X=" << inputManager->getMouseDeltaX() << " Y=" << inputManager->getMouseDeltaY() << std::endl;
-                }
-                camera->rotate(yawDelta, pitchDelta);
-            }
-            
-            // Handle mousepad/scroll wheel zoom
-            float scrollDelta = inputManager->getScrollDelta();
-            if (scrollDelta != 0.0f) {
-                camera->zoom(scrollDelta * 0.3f);  // Adjust multiplier for feel
-                inputManager->clearScrollDelta();
-            }
-            
             // Update camera
             camera->update(deltaTime, currentAircraft.get());
             
@@ -490,7 +451,6 @@ void Game::loadResources() {
 }
 
 void Game::setState(GameState newState) {
-    previousState = currentState;
     currentState = newState;
     
     switch (newState) {

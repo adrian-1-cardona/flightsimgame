@@ -11,8 +11,6 @@ Physics::~Physics() {}
 void Physics::update(float deltaTime, Aircraft* aircraft, const Terrain* terrain) {
     if (!aircraft) return;
     
-    deltaTime *= timeScale;
-    
     // The aircraft handles most of its own physics
     // This class is for more complex interactions
     

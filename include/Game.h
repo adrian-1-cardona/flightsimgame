@@ -71,13 +71,11 @@ private:
     
     // Game state
     GameState currentState = GameState::LOADING;
-    GameState previousState = GameState::LOADING;
     bool isRunning = false;
     
     // Timing
     Uint64 lastFrameTime = 0;
     float deltaTime = 0.0f;
-    float loadingProgress = 0.0f;
     
     // Window properties
     int windowWidth = 1920;

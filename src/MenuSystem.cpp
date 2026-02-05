@@ -96,7 +96,6 @@ void MenuSystem::handleMouse(InputManager* input, int screenWidth, int screenHei
             // Check for click using the new reliable method
             if (input->wasMouseButtonClickedThisFrame(SDL_BUTTON_LEFT)) {
                 select();
-                std::cout << "Menu item clicked: " << currentMenuItems[selectedIndex].text << std::endl;
             }
             break;
         }
@@ -167,22 +166,9 @@ void MenuSystem::navigateLeft() {
             selectedAircraftIndex = static_cast<int>(availableAircraft.size()) - 1;
         }
         game->getAudioManager()->playSound(SoundEffect::MENU_MOVE);
-        std::cout << "Selected aircraft: " << (int)(availableAircraft[selectedAircraftIndex]) << std::endl;
     } else if (currentMenu == MenuState::VOLUME) {
         // Decrease volume
-        auto settings = game->getSettingsManager();
-        switch (selectedIndex) {
-            case 0: settings->setMasterVolume(settings->getMasterVolume() - 0.1f); break;
-            case 1: settings->setMusicVolume(settings->getMusicVolume() - 0.1f); break;
-            case 2: settings->setSFXVolume(settings->getSFXVolume() - 0.1f); break;
-            case 3: settings->setEngineVolume(settings->getEngineVolume() - 0.1f); break;
-        }
-        // Apply to audio manager
-        auto audio = game->getAudioManager();
-        audio->setMasterVolume(settings->getMasterVolume());
-        audio->setMusicVolume(settings->getMusicVolume());
-        audio->setSFXVolume(settings->getSFXVolume());
-        audio->setEngineVolume(settings->getEngineVolume());
+        updateVolumeSettings(-0.1f);
     }
 }
 
@@ -193,22 +179,9 @@ void MenuSystem::navigateRight() {
             selectedAircraftIndex = 0;
         }
         game->getAudioManager()->playSound(SoundEffect::MENU_MOVE);
-        std::cout << "Selected aircraft: " << (int)(availableAircraft[selectedAircraftIndex]) << std::endl;
     } else if (currentMenu == MenuState::VOLUME) {
         // Increase volume
-        auto settings = game->getSettingsManager();
-        switch (selectedIndex) {
-            case 0: settings->setMasterVolume(settings->getMasterVolume() + 0.1f); break;
-            case 1: settings->setMusicVolume(settings->getMusicVolume() + 0.1f); break;
-            case 2: settings->setSFXVolume(settings->getSFXVolume() + 0.1f); break;
-            case 3: settings->setEngineVolume(settings->getEngineVolume() + 0.1f); break;
-        }
-        // Apply to audio manager
-        auto audio = game->getAudioManager();
-        audio->setMasterVolume(settings->getMasterVolume());
-        audio->setMusicVolume(settings->getMusicVolume());
-        audio->setSFXVolume(settings->getSFXVolume());
-        audio->setEngineVolume(settings->getEngineVolume());
+        updateVolumeSettings(0.1f);
     }
 }
 
@@ -987,4 +960,20 @@ void MenuSystem::renderVolumeSettings(Renderer* renderer) {
     // Hint
     renderer->renderText("LEFT/RIGHT to adjust volume", w/2 - 130, h - 50, 0.9f,
                         Color(0.4f, 0.4f, 0.5f));
+}
+
+void MenuSystem::updateVolumeSettings(float delta) {
+    auto settings = game->getSettingsManager();
+    switch (selectedIndex) {
+        case 0: settings->setMasterVolume(settings->getMasterVolume() + delta); break;
+        case 1: settings->setMusicVolume(settings->getMusicVolume() + delta); break;
+        case 2: settings->setSFXVolume(settings->getSFXVolume() + delta); break;
+        case 3: settings->setEngineVolume(settings->getEngineVolume() + delta); break;
+    }
+    // Apply to audio manager
+    auto audio = game->getAudioManager();
+    audio->setMasterVolume(settings->getMasterVolume());
+    audio->setMusicVolume(settings->getMusicVolume());
+    audio->setSFXVolume(settings->getSFXVolume());
+    audio->setEngineVolume(settings->getEngineVolume());
 }
