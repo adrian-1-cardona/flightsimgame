@@ -244,11 +244,11 @@ void InputManager::update() {
         float rightX = SDL_GameControllerGetAxis(activeController, SDL_CONTROLLER_AXIS_RIGHTX) / 32767.0f;
         axisValues[InputAction::YAW_LEFT] = applyDeadzone(rightX);
         
-        // Triggers for throttle
+        // Triggers for throttle - apply deadzone!
         float leftTrigger = SDL_GameControllerGetAxis(activeController, SDL_CONTROLLER_AXIS_TRIGGERLEFT) / 32767.0f;
         float rightTrigger = SDL_GameControllerGetAxis(activeController, SDL_CONTROLLER_AXIS_TRIGGERRIGHT) / 32767.0f;
-        axisValues[InputAction::THROTTLE_UP] = leftTrigger;
-        axisValues[InputAction::THROTTLE_DOWN] = rightTrigger;
+        axisValues[InputAction::THROTTLE_UP] = applyDeadzone(leftTrigger);
+        axisValues[InputAction::THROTTLE_DOWN] = applyDeadzone(rightTrigger);
     }
     
     // Reset mouse deltas at the end of update for next frame
@@ -364,19 +364,21 @@ float InputManager::getYawAxis() const {
 }
 
 float InputManager::getThrottleAxis() const {
-    // Controller input (triggers)
-    float throttleUp = getActionValue(InputAction::THROTTLE_UP);
-    float throttleDown = getActionValue(InputAction::THROTTLE_DOWN);
-    float controllerThrottle = throttleUp - throttleDown;
-    
-    // Keyboard input - E to increase, Q to decrease
+    // Keyboard input - E to increase, Q to decrease (PRIMARY)
     float keyboardThrottle = 0.0f;
     if (keyboardState) {
         if (keyboardState[SDL_SCANCODE_E]) keyboardThrottle += 1.0f;
         if (keyboardState[SDL_SCANCODE_Q]) keyboardThrottle -= 1.0f;
     }
     
-    return (std::abs(controllerThrottle) > std::abs(keyboardThrottle)) ? controllerThrottle : keyboardThrottle;
+    // Controller input (triggers) - only if keyboard not used
+    if (keyboardThrottle == 0.0f) {
+        float throttleUp = getActionValue(InputAction::THROTTLE_UP);
+        float throttleDown = getActionValue(InputAction::THROTTLE_DOWN);
+        return throttleUp - throttleDown;
+    }
+    
+    return keyboardThrottle;
 }
 
 bool InputManager::isKeyDown(SDL_Scancode key) const {

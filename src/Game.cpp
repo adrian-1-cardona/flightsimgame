@@ -501,10 +501,6 @@ void Game::selectAircraft(AircraftType type) {
     currentAircraft = std::make_unique<Aircraft>(type);
     currentAircraft->reset();
     
-    // Position aircraft in the air for flying
-    currentAircraft->setPosition(Vector3(0, 500, -1000));
-    currentAircraft->setThrottle(0.7f);
-    
     std::cout << "Selected aircraft: " << currentAircraft->getSpecs().name << std::endl;
     std::cout << "Ready to fly! Use WASD/Arrows for pitch/roll, Z/X for yaw, Q/E for throttle." << std::endl;
 }

@@ -151,16 +151,8 @@ void Aircraft::applyPhysics(float deltaTime) {
     float speedKmh = speed * 3.6f;
     float maxSpeedMs = specs.maxSpeed / 3.6f;
     
-    // Calculate stall speed (more realistic)
-    float stallSpeedCurrent = specs.stallSpeed;
-    if (flapsLevel > 0) {
-        stallSpeedCurrent *= (1.0f - 0.08f * flapsLevel);  // Flaps reduce stall speed more
-    }
-    // Stall also depends on altitude (thinner air = higher stall speed)
-    float altitudeFactor = 1.0f + (position.y / specs.maxAltitude) * 0.3f;
-    stallSpeedCurrent *= altitudeFactor;
-    
-    stalling = !onGround && speedKmh < stallSpeedCurrent && position.y > 10.0f;
+    // Disable stalling - free arcade flying
+    stalling = false;
     
     // Throttle affects speed with smooth, arcade-friendly acceleration
     float targetSpeed = throttle * maxSpeedMs;
@@ -227,7 +219,6 @@ void Aircraft::applyPhysics(float deltaTime) {
         // Normalize heading
         while (rotation.y < 0) rotation.y += 360.0f;
         while (rotation.y >= 360.0f) rotation.y -= 360.0f;
-        
         // SIMPLE ARCADE FLIGHT PHYSICS - User has full control
         
         // Direct throttle control - no complex aerodynamics
@@ -292,10 +283,9 @@ void Aircraft::checkGroundCollision() {
         position.y = groundHeight + gearHeight;
         verticalSpeed = 0;
     } else {
-        // Takeoff check - make it arcade-friendly and fun
-        // Just need throttle + slight pitch up to take off
-        if (onGround && throttle > 0.2f && rotation.x > 2.0f) {
-            onGround = false;
+        // Takeoff - user controlled by pitch up + throttle
+        if (onGround && throttle > 0.3f) {
+            onGround = false;  // Player initiated takeoff with throttle
         }
     }
 }
